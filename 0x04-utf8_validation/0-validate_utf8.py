@@ -11,32 +11,31 @@
 def validUTF8(data):
     # Number of bytes in the current UTF-8 character
     num_bytes = 0
-    
-    # Masks to check the leading bits
-    mask1 = 1 << 7  # 10000000
-    mask2 = 1 << 6  # 01000000
+
+    # Masks to check the most significant bits
+    mask1 = 1 << 7
+    mask2 = 1 << 6
 
     for num in data:
-        mask = 1 << 7
+        # Get the 8 least significant bits of the integer
+        byte = num & 0xFF
+
         if num_bytes == 0:
-            # Count how many 1s are at the start of the byte
-            while mask & num:
-                num_bytes += 1
-                mask >>= 1
-
-            # 1 byte characters
-            if num_bytes == 0:
+            # Determine the number of bytes in the UTF-8 character
+            if (byte & mask1) == 0:
                 continue
-
-            # If the number of bytes is more than 4 or less than 2, it's invalid
-            if num_bytes == 1 or num_bytes > 4:
+            elif (byte & (mask1 >> 1)) == mask1:
+                num_bytes = 1
+            elif (byte & (mask1 >> 2)) == (mask1 >> 1):
+                num_bytes = 2
+            elif (byte & (mask1 >> 3)) == (mask1 >> 2):
+                num_bytes = 3
+            else:
                 return False
         else:
-            # If this byte doesn't start with '10', it's invalid
-            if not (num & mask1 and not (num & mask2)):
+            # Check if the byte is a valid continuation byte
+            if not (byte & mask1 and not (byte & mask2)):
                 return False
-
         num_bytes -= 1
 
-    # All characters should be fully processed, so num_bytes should be 0
     return num_bytes == 0
