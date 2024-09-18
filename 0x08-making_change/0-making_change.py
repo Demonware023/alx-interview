@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 """
-Coin Change Algorithm
+The coin change problem
 """
 
 
